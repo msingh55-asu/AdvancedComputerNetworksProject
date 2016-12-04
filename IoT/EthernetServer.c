@@ -43,10 +43,7 @@ int main(int argc, char *argv[])
 
 	
 	/* Get interface name */
-	if (argc > 1)
-		strcpy(ifName, argv[1]);
-	else
-		strcpy(ifName, DEFAULT_IF);
+	strcpy(ifName, DEFAULT_IF);
 
 	/* Header structures */
 	struct ether_header *eh = (struct ether_header *) buf;
