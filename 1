@@ -87,20 +87,7 @@ class Tutorial (object):
         #log.debug("Installing flow...")
 
     else:
-      	print str(packet.dst) + " Message not known, not in mac_to_port"
-    
-    if packet.type == ethernet.IPV6_TYPE:
-        print "IPv6 TYPE Address IPv6 IPv6 IPv6"
-        ipv4_packet = packet.find("ipv6")
-        src_ip = ipv4_packet.srcip
-        print "Source IP is: ", src_ip
-    	if src_ip == "::FF:0":
-		print "Message received from IoT Device"
-        	if 255 not in self.mac_to_app:
-        		print "Message received from IoT"
-                	self.mac_to_app[255] = packet.src
-                	print "Value of MAC_TO_APP", self.mac_to_app
-        	print "Registering IoT, IoT has MAC: ", self.mac_to_app[255]
+      	print str(packet.dst) + " not known, resend to everybody"
       	#self.resend_packet(packet_in, of.OFPP_ALL)
     if 255 not in self.mac_to_app:
 	print "IOT device not registered, register Iot device first"
@@ -108,7 +95,7 @@ class Tutorial (object):
 
     if packet.type == ethernet.IPV6_TYPE:
         print "IPv6 TYPE Address IPv6 IPv6 IPv6"
-        ipv4_packet = packet.find("ipv6")
+        ipv4_packet = event.parsed.find("ipv6")
         src_ip = ipv4_packet.srcip
         print "Source IP is: ", src_ip
         if src_ip == "::1:0":
@@ -117,14 +104,7 @@ class Tutorial (object):
                         print "Message received from App1"
                         self.mac_to_app[1] = packet.src
                         print "Value of MAC_TO_APP", self.mac_to_app
-                #print packet
-		print "Sending to MAC: ", self.mac_to_app[255]
-		#packet.type = 0x8600
-		#packet.srcip = "10.10.1.1"
-		#packet.dstip = "10.10.1.4"
-		#print "NEW Source IP", packet.srcip
-		#print "NEW Destination IP", packet.dstip	
-		#print "New Packet type", packet.type
+                print "Sending to MAC: ", self.mac_to_app[255]
 		self.resend_packet(packet_in, self.mac_to_port[self.mac_to_app[255]])
         elif src_ip == "::2:0":
                 print "Message received from App2"
@@ -143,6 +123,13 @@ class Tutorial (object):
                         print "Value of MAC_TO_APP", self.mac_to_app
 		print "Sending to MAC: ", self.mac_to_app[255]
 		self.resend_packet(packet_in, self.mac_to_port[self.mac_to_app[255]])
+        elif src_ip == "::FF:0":
+                print "Message received from IoT Device"
+                if 255 not in self.mac_to_app:
+                        print "Message received from IoT"
+                        self.mac_to_app[255] = packet.src
+                        print "Value of MAC_TO_APP", self.mac_to_app
+                print "Registering IoT, IoT has MAC: ", self.mac_to_app[255]
 	elif src_ip == "::1":
                 print "Message received from IoT device for App1"
                 if 1 not in self.mac_to_app:
@@ -172,31 +159,19 @@ class Tutorial (object):
     else:
         if packet.type == ethernet.IP_TYPE:
                 print "IPv4 TYPE Address IPv4 IPv4 IPv4"
-                ipv4_packet = packet.find("ipv4")
+                ipv4_packet = event.parsed.find("ipv4")
                 src_ip = ipv4_packet.srcip
                 print "Source IP is: ", src_ip
-		if packet.dst in self.mac_to_port:
-                        print str(packet.dst) + " destination known. only send message to it"
-                        self.resend_packet(packet_in, self.mac_to_port[packet.dst])
-                else:
-                        print "Sending to All ports"
-                        self.resend_packet(packet_in, of.OFPP_ALL)
         else:
                 print "Not an IP packet"
-		if packet.dst in self.mac_to_port:
-			print str(packet.dst) + " destination known. only send message to it"
-			self.resend_packet(packet_in, self.mac_to_port[packet.dst])
-   		else:
-			print "Sending to All ports"
-			self.resend_packet(packet_in, of.OFPP_ALL)
- 
+    
     log.debug("Installing flow...")
  
 
 
   def _handle_PacketIn (self, event):
 
-    print "***************New Message received************"
+    print "Hello Message received"
 
     packet = event.parsed # This is the parsed packet data.
     if not packet.parsed:
@@ -205,7 +180,6 @@ class Tutorial (object):
 
     packet_in = event.ofp # The actual ofp_packet_in message.
     
-     
     if packet.type == 0x86DD:
         print "IPv6 Packet"
     else:
